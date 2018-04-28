@@ -32,45 +32,58 @@
 <body>
 
 input your query here
-<form method="post" action="<?php echo $_SERVER['PHP_SELF'];?>">
+<form method="get" action="<?php echo $_SERVER['PHP_SELF'];?>">
 	<textarea name="query" cols="80" rows="10"></textarea><br />
 	<input type="submit" value="Submit" />
 </form>
 
 <?php
-	$db = mysql_connect("localhost", "cs143", "");
-	if(!$db) {
-		$errmsg = mysql_error($db);
-		print "Connection failed: $errmsg <br>";
-		exit(1);
+	$db = new mysqli('localhost', 'cs143', '', 'CS143');
+	if($db->connect_errno > 0){
+	    die('Unable to connect to database [' . $db->connect_error . ']');
 	}
 
-	mysql_select_db("CS143", $db);
+	if ($_SERVER["REQUEST_METHOD"] == "GET") {
+		$query = $_GET['query'];
+		if (!empty($query)) {
+			$sanitized_name = $db->real_escape_string($name);
+			$query_to_issue = sprintf($query, $sanitized_name);
 
-	if ($_SERVER["REQUEST_METHOD"] == "POST") {
-		$query = $_POST['query'];
-		$result = mysql_query($query, $db);
-     		
-        print "<table>";
-   
-        print "<tr>";
-        for($i = 0; $i < mysql_num_fields($result); $i++) {
-            $field_info = mysql_fetch_field($result, $i);
-            echo "<th>{$field_info->name}</th>";
-        }
-        print "</tr>";
-
-		while($row = mysql_fetch_row($result)) {
-			print "<tr>";
-			for($i = 0; $i < count($row); $i++) {
-				print "<th>$row[$i]</th>";
+			if (!($rs = $db->query($query_to_issue))) {
+			    $errmsg = $db->error;
+			    print "Query failed: $errmsg <br />";
+			    exit(1);
 			}
-			print "</tr>";
+
+			$all_field = array();
+
+			print "<table>";
+
+			// meta data row
+	      	print "<tr>";
+	      	for($i = 0; $i < mysqli_num_fields($rs); $i++) {
+	          $field_info = mysqli_fetch_field_direct($rs, $i);
+	          $field_name = $field_info->name;
+	          echo "<th>{$field_name}</th>";
+	          array_push($all_field, $field_name);
+	      	}
+	      	print "</tr>";
+
+	      	// content rows
+			while($row = $rs->fetch_assoc()) {
+				print "<tr>";
+				foreach($all_field as $f) {
+					print "<th>$row[$f]</th>";
+				}
+				print "</tr>";
+			}
+
+			print "</table>";
+			$rs->free();
 		}
-		print "</table>";
 	}
 
-	mysql_close($db)
+	$db->close();
 ?>
 
 </body>
