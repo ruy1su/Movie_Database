@@ -36,7 +36,7 @@
       if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $search = $_GET["search"];
         $id = $_GET["id"];
-        echo $search;
+        // echo $search;
 
         if(isset($search)) {
           $keywords = explode(" ", mysqli_real_escape_string($db, $search));
@@ -47,21 +47,21 @@
             case 0:
             case 1:
               $query = "SELECT id, concat(last,' ',first) as 'Actor Name', sex, dob as 'Birthday', dod as 'Pass Away' from Actor
-                        WHERE (first LIKE '$search') OR (last LIKE '$search')";
+                        WHERE (first LIKE '%$search%') OR (last LIKE '%$search%')";
               break;
 
             case 2:
               $keyword1 = $keywords[0];
               $keyword2 = $keywords[1];
               $query = "SELECT id, concat(last,' ',first) as 'Actor Name', sex, dob as 'Birthday', dod as 'Pass Away' from Actor
-                        WHERE (first LIKE '$keyword1') AND (last LIKE '$keyword2') OR
-                              (last LIKE '$keyword1') AND (first LIKE '$keyword2')";
+                        WHERE (first LIKE '%$keyword1%') AND (last LIKE '%$keyword2%') OR
+                              (last LIKE '%$keyword1%') AND (first LIKE '%$keyword2%')";
               break;
 
             default:
               $query = "SELECT id FROM Actor WHERE FALSE";
           }
-          echo $query;
+          // echo $query;
 
           $result = $db->query($query);
           // echo mysqli_num_fields($result);
@@ -69,9 +69,9 @@
           $table = new Table($result, 1, "Matching Actors:");
 
           // Movies
-          $query = "SELECT * FROM Movie WHERE title LIKE '$keywords[0]'";
+          $query = "SELECT * FROM Movie WHERE title LIKE '%$keywords[0]%'";
           for($i = 1; $i < count($keywords); $i++) {
-            $query .= "AND title LIKE '$keywords[$i]'";
+            $query .= "AND title LIKE '%$keywords[$i]%'";
           }
 
           $result = $db->query($query);

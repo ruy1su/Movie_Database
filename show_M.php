@@ -77,10 +77,10 @@
       } else if(isset($search)) {           // show search result
         $keywords = explode(" ", mysqli_real_escape_string($db, $search));
         // echo $keywords;
-        $query = "SELECT * FROM Movie WHERE title LIKE '$keywords[0]'";
+        $query = "SELECT * FROM Movie WHERE title LIKE '%$keywords[0]%'";
         // echo $query;
         for($i = 1; $i < count($keywords); $i++) {
-          $query = "AND title LIKE '$keywords[$i]'";
+          $query = "AND title LIKE '%$keywords[$i]%'";
         }
 
         $result = $db->query($query);
